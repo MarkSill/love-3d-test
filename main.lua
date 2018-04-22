@@ -3,6 +3,7 @@ local cpml = require "cpml"
 function love.load()
 	format = {
 		{
+			-- Add Z coordinate to VertexPosition
 			"VertexPosition",
 			"float",
 			3
@@ -19,28 +20,35 @@ function love.load()
 		}
 	}
 	vertices = {
-		{100, 50, 10},
-		{110, 50, 10},
-		{110, 60, 10}
+		{0, 0, 10},
+		{10, 0, 10},
+		{10, 10, 10}
 	}
 	mesh = love.graphics.newMesh(format, vertices, "triangles")
 	shader = love.graphics.newShader("test.glsl")
 	cameraPos = cpml.vec3(0, -5, -15)
-	angle = cpml.vec2(0, 0)
+	angle = cpml.vec2(0, 2)
 end
 
 function love.draw()
-	shader:send("view", makeProper(matrix()))
+	love.graphics.push("all")
+	local w, h = love.graphics.getDimensions()
+	love.graphics.translate(w/2, h/2)
+	shader:send("view", makeProper(matrix()):to_vec4s())
 	love.graphics.setShader(shader)
 	love.graphics.setDepthMode("lequal", false)
 	love.graphics.draw(mesh)
 	love.graphics.setShader()
+	love.graphics.pop()
 	for i = 1, mesh:getVertexCount() do
 		local vertex = cpml.vec3(mesh:getVertex(i))
 		vertex = makeProper(matrix()) * vertex
+		love.graphics.translate(w/2, h/2)
 		love.graphics.points(vertex.x, vertex.y)
+		love.graphics.translate(-w/2, -h/2)
 		love.graphics.print(vertex.x .. ", " .. vertex.y .. ", " .. vertex.z, 20, 20 * i)
 	end
+	love.graphics.print("Angle: " .. angle.x .. ", " .. angle.y, 20, 20*4)
 end
 
 function matrix()
@@ -74,12 +82,14 @@ end
 function love.mousepressed(x, y, button)
 	if button == 1 then
 		dragging = true
+		love.mouse.setRelativeMode(true)
 	end
 end
 
 function love.mousereleased(x, y, button)
 	if button == 1 then
 		dragging = false
+		love.mouse.setRelativeMode(false)
 	end
 end
 
