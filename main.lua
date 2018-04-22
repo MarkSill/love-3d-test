@@ -25,7 +25,7 @@ function love.load()
 		{10, 10, 10}
 	}
 	mesh = love.graphics.newMesh(format, vertices, "triangles")
-	shader = love.graphics.newShader("test.glsl")
+	shader = love.graphics.newShader("test.glsl", "test.glsl")
 	cameraPos = cpml.vec3(0, -5, -15)
 	angle = cpml.vec2(0, 2)
 end
