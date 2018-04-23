@@ -20,17 +20,17 @@ function love.load()
 			4
 		}
 	}
-	width = 100
-	height = 100
+	width = 2
+	height = 2
 	vertices = {
-		{-width/2, -height/2, 10},
-		{width/2, -height/2, 10},
-		{width/2, height/2, 10}
+		{-width/2, -height/2, 0},
+		{width/2, -height/2, 0},
+		{width/2, height/2, 0}
 	}
 	mesh = love.graphics.newMesh(format, vertices, "triangles")
-	shader = love.graphics.newShader("test.glsl", "test.glsl")
-	cameraPos = cpml.vec3(0, -5, -15)
-	angle = cpml.vec2(0, 2)
+	shader = love.graphics.newShader("test.glsl")
+	cameraPos = cpml.vec3(0, 0, -15)
+	angle = cpml.vec2(0, 0)
 	drawMode = "lines"
 end
 
@@ -38,7 +38,8 @@ function love.draw()
 	love.graphics.push("all")
 	local w, h = love.graphics.getDimensions()
 	love.graphics.translate(w/2, h/2)
-	shader:send("view", makeProper(matrix()):to_vec4s())
+	local view = matrix()
+	shader:send("view", view)
 	love.graphics.setShader(shader)
 	love.graphics.setDepthMode("lequal", false)
 	love.graphics.draw(mesh)
@@ -47,9 +48,9 @@ function love.draw()
 	local vertices = {}
 	for i = 1, mesh:getVertexCount() do
 		local vertex = cpml.vec3(mesh:getVertex(i))
-		vertex = makeProper(matrix()) * vertex
-		table.insert(vertices, vertex.x)
-		table.insert(vertices, vertex.y)
+		vertex = view * vertex
+		table.insert(vertices, vertex.x * 10)
+		table.insert(vertices, vertex.y * 10)
 		love.graphics.print(vertex.x .. ", " .. vertex.y .. ", " .. vertex.z, 20, 20 * i)
 	end
 	love.graphics.push("all")
@@ -92,7 +93,7 @@ function matrix()
 	v:rotate(v, -math.pi/2, cpml.vec3.unit_x)
 	v:rotate(v, angle.y, cpml.vec3.unit_x)
 	v:rotate(v, angle.x, cpml.vec3.unit_y)
-	return mat * v
+	return makeProper(mat) * makeProper(v)
 end
 
 function makeProper(mat)
@@ -119,7 +120,7 @@ function love.keypressed(key)
 			drawMode = "points"
 		end
 	elseif key == "backspace" then
-		angle = cpml.vec2(0, 2)
+		angle = cpml.vec2(0, 0)
 	end
 end
 
